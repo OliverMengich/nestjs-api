@@ -1,0 +1,77 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Location {
+  id        String  @id @default(uuid())
+  name      String
+  address   String
+  latitude  Float
+  longitude Float
+  events    Event[]
+}
+
+model Attendee {
+  id         String  @id @default(uuid())
+  name       String
+  email      String
+  password   String
+  events     Event[]
+  favourites Event[] @relation("favourites")
+
+  @@unique([email]) // an attendee can only have one email, email is unique
+  @@index([email]) // this is an index on the email column, this is used for faster lookups and queries
+}
+
+model Speaker {
+  id          String @id @default(uuid())
+  name        String
+  email       String
+  description String
+  password    String
+  event       Event?
+  // @@index([email])
+  // @@id([email]) // this is a composite primary key, the email is the primary key
+
+  @@unique([email])
+}
+
+model ReviewsAndRatings {
+  id        String @id @default(uuid())
+  rating    Int
+  review    String
+  event     Event  @relation(fields: [eventId], references: [id])
+  eventId   String
+  speakerId String
+}
+
+model Event {
+  id          String              @id @default(uuid())
+  name        String
+  description String?
+  date        DateTime
+  location    Location?           @relation(fields: [locationId], references: [id]) // an event has one location and a location can have many events
+  locationId  String?
+  attendees   Attendee[]
+  image       String[]
+  ratings     ReviewsAndRatings[]
+  favourites  Attendee[]          @relation("favourites")
+
+  speaker   Speaker?  @relation(fields: [speakerId], references: [id]) // an event has one speaker and a speaker can have one event
+  speakerId String?   @unique
+  updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now())
+}
+
+enum Role {
+  ADMIN
+  USER
+}
