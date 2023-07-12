@@ -64,7 +64,8 @@ model Event {
   image       String[]
   ratings     ReviewsAndRatings[]
   favourites  Attendee[]          @relation("favourites")
-
+  ticketPrice Float? // integrate a payment service, email listing
+  // ticket generation pdf
   speaker   Speaker?  @relation(fields: [speakerId], references: [id]) // an event has one speaker and a speaker can have one event
   speakerId String?   @unique
   updatedAt DateTime @updatedAt
