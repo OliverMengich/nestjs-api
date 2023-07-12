@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma.service';
-import { Attendee, Prisma } from '@prisma/client';
+import { Attendee } from '@prisma/client';
 
 @Injectable()
 export class UserService {
@@ -22,14 +22,16 @@ export class UserService {
     });
     return users;
   }
-  async updateUser(
-    id: string,
-    data: Prisma.AttendeeUpdateInput,
-  ): Promise<Attendee> {
+  async updateUser(id: string, data: any): Promise<Attendee> {
+    console.log(data);
     return await this.prisma.attendee.update({
       where: { id },
       data: {
-        events: data.events,
+        events: {
+          connect: {
+            id: data.events,
+          },
+        },
         favourites: data.favourites,
       },
     });

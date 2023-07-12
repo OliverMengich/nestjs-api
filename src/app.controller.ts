@@ -142,4 +142,9 @@ export class AppController {
     console.log(data);
     return this.userService.updateUser(req.user.id, data);
   }
+  @UseGuards(AuthGuard)
+  @Post('event-register')
+  async eventRegister(@Request() req: NewRequest, @Body() data: any) {
+    return this.userService.updateUser(req.user.id, data);
+  }
 }
