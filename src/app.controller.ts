@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Delete,
@@ -7,13 +8,20 @@ import {
   HttpStatus,
   Param,
   Post,
+  Request,
+  UseGuards,
 } from '@nestjs/common';
 import { AppService } from './app.service';
 import { EventService } from './Events/events.service';
 import { SpeakerService } from './Speaker/speaker.service';
 import { LocationService } from './Location/location.service';
-import { Location, Speaker, Event } from '@prisma/client';
+import { Location, Speaker, Event, Attendee } from '@prisma/client';
 import { AuthService } from './auth/auth.service';
+import { AuthGuard } from './auth/auth.guard';
+import { UserService } from './Users/user.service';
+interface NewRequest extends Request {
+  user: Attendee;
+}
 @Controller()
 export class AppController {
   constructor(
@@ -22,6 +30,7 @@ export class AppController {
     private readonly locationService: LocationService,
     private readonly speakerService: SpeakerService,
     private readonly authService: AuthService,
+    private readonly userService: UserService,
   ) {}
 
   @Get()
@@ -93,10 +102,44 @@ export class AppController {
     console.log(data);
     return this.speakerService.createSpeaker(data);
   }
+  @Get('attendees')
+  getAttendees() {
+    // console.log('locations');
+    return this.userService.getAttendees();
+  }
+  @Post('register')
+  async register(@Body() user: Attendee) {
+    console.log(user);
+    return this.authService.registerUser(user);
+  }
   @HttpCode(HttpStatus.OK)
   @Post('auth/login')
-  async login(@Body() user: any) {
-    console.log(user);
+  async login(@Body() user: Omit<Attendee, 'id'>) {
+    console.log(user.email);
+    if (!user.email && !user.name && !user.password) {
+      throw new BadRequestException('Something bad happened', {
+        cause: new Error(),
+        description: 'Some error description',
+      });
+    }
     return this.authService.validateUser(user.email, user.password);
+  }
+  @UseGuards(AuthGuard)
+  @Get('profile')
+  async getProfile(@Request() req: NewRequest): Promise<Attendee> {
+    const user = req.user;
+    if (!user.email && !user.name && !user.id) {
+      throw new BadRequestException('Something bad happened', {
+        cause: new Error(),
+        description: 'Error Encountered!!',
+      });
+    }
+    return this.userService.getUserInfo(req.user.id);
+  }
+  @UseGuards(AuthGuard)
+  @Post('update')
+  async updateProfile(@Request() req: NewRequest, @Body() data: any) {
+    console.log(data);
+    return this.userService.updateUser(req.user.id, data);
   }
 }
