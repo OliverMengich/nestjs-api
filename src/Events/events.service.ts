@@ -6,9 +6,8 @@ import { Event, Prisma } from '@prisma/client';
 export class EventService {
   constructor(private prisma: PrismaService) {}
   async events(): Promise<Event[]> {
-    // log(this.prisma);
     return await this.prisma.event.findMany({
-      include: { location: true, speaker: true },
+      include: { location: true, speaker: true, attendees: true },
     });
   }
   async event(id: string): Promise<Event> {
