@@ -17,6 +17,7 @@ export class EventService {
     });
   }
   async createEvent(data): Promise<Event> {
+    console.log('Data to create', data);
     return await this.prisma.event.create({
       data,
     });
