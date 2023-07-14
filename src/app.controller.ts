@@ -10,7 +10,12 @@ import {
   Post,
   Request,
   UseGuards,
+  UploadedFile,
+  UseInterceptors,
+  UploadedFiles,
 } from '@nestjs/common';
+import { Express } from 'express';
+import { mkdir, mkdirSync, writeFileSync } from 'fs';
 import { AppService } from './app.service';
 import { EventService } from './Events/events.service';
 import { SpeakerService } from './Speaker/speaker.service';
@@ -19,6 +24,11 @@ import { Location, Speaker, Event, Attendee } from '@prisma/client';
 import { AuthService } from './auth/auth.service';
 import { AuthGuard } from './auth/auth.guard';
 import { UserService } from './Users/user.service';
+import {
+  FileInterceptor,
+  FileFieldsInterceptor,
+  FilesInterceptor,
+} from '@nestjs/platform-express';
 interface NewRequest extends Request {
   user: Attendee;
 }
@@ -53,10 +63,39 @@ export class AppController {
       data: data,
     });
   }
+  @UseGuards(AuthGuard)
   @Post('new-event')
-  createEvent(@Body() data: Event) {
-    console.log(data);
-    return this.eventService.createEvent(data);
+  @UseInterceptors(FileFieldsInterceptor([{ name: 'posters', maxCount: 3 }]))
+  createEvent(
+    @Body() data,
+    @Request() req: NewRequest,
+    @UploadedFiles()
+    files: {
+      posters: Express.Multer.File[];
+    },
+  ) {
+    console.log(data, files);
+    console.log(req.user);
+    const imageArr: string[] = [];
+    if (files) {
+      files.posters.forEach((poster) => {
+        console.log(poster);
+        imageArr.push('/src/Events/posters/' + poster.originalname);
+        mkdirSync(`./src/Events/posters/`, { recursive: true });
+        writeFileSync(
+          `./src/Events/posters/${poster.originalname}`,
+          poster.buffer,
+        );
+      });
+    }
+    console.log(imageArr, 'Images array');
+    // return {
+    //   message: 'Event created successfully',
+    // };
+    return this.eventService.createEvent({
+      ...JSON.parse(data.request),
+      image: imageArr,
+    });
   }
   @Delete('delete-event/:id')
   deleteEvent(@Param('id') id: string) {
@@ -79,10 +118,26 @@ export class AppController {
       data: data,
     });
   }
+  @UseGuards(AuthGuard)
   @Post('new-location')
-  createLocation(@Body() data: Location) {
-    console.log(data);
-    return this.locationService.createLocation(data);
+  @UseInterceptors(FilesInterceptor('files'))
+  createLocation(
+    @UploadedFiles() files: Array<Express.Multer.File>,
+    @Body() data: any,
+    // @Request() req: NewRequest,
+  ) {
+    const imageArr: string[] = [];
+    files.forEach((img) => {
+      console.log(img);
+      imageArr.push(img.originalname);
+      mkdirSync(`./src/Events/posters/`, { recursive: true });
+      writeFileSync(`./src/Events/posters/${img.originalname}`, img.buffer);
+    });
+    console.log(imageArr, 'Images array');
+    return this.locationService.createLocation({
+      ...JSON.parse(data.request),
+      images: imageArr,
+    });
   }
   @Delete('delete-location/:id')
   deleteLocation(@Param('id') id: string) {
@@ -137,6 +192,24 @@ export class AppController {
     return this.userService.getUserInfo(req.user.id);
   }
   @UseGuards(AuthGuard)
+  @UseInterceptors(FileInterceptor('file'))
+  @Post('attendee/upload')
+  upLoadFile(
+    @Request() req: NewRequest,
+    @UploadedFile() file: Express.Multer.File,
+  ) {
+    console.log(file, req.user.id, __dirname);
+    mkdir('./src/uploads' + req.user.id, { recursive: true }, (err) => {
+      if (err) throw err;
+    });
+    writeFileSync(
+      `./src/uploads/${req.user.id}/${file.originalname}`,
+      Buffer.from(new Uint8Array(file.buffer)),
+    );
+    const userImagePath = '/src/uploads/' + req.user.id + file.originalname;
+    return this.userService.normalUpdate(req.user.id, userImagePath);
+  }
+  @UseGuards(AuthGuard)
   @Post('update')
   async updateProfile(@Request() req: NewRequest, @Body() data: any) {
     console.log(data);
@@ -145,6 +218,11 @@ export class AppController {
   @UseGuards(AuthGuard)
   @Post('event-register')
   async eventRegister(@Request() req: NewRequest, @Body() data: any) {
+    return this.userService.updateUser(req.user.id, data);
+  }
+  @UseGuards(AuthGuard)
+  @Post('event-unregister')
+  async eventUnregister(@Request() req: NewRequest, @Body() data: any) {
     return this.userService.updateUser(req.user.id, data);
   }
 }
