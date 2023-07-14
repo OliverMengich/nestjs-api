@@ -17,6 +17,7 @@ model Location {
   latitude  Float
   longitude Float
   events    Event[]
+  images    String[]
 }
 
 model Attendee {
