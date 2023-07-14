@@ -26,6 +26,7 @@ model Attendee {
   password   String
   events     Event[]
   favourites Event[] @relation("favourites")
+  imageUrl   String?
 
   @@unique([email]) // an attendee can only have one email, email is unique
   @@index([email]) // this is an index on the email column, this is used for faster lookups and queries
@@ -38,6 +39,7 @@ model Speaker {
   description String
   password    String
   event       Event?
+  imageUrl   String?
   // @@index([email])
   // @@id([email]) // this is a composite primary key, the email is the primary key
 

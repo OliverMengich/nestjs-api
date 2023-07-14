@@ -22,6 +22,7 @@ export class UserService {
     });
     return users;
   }
+  // Use this to update the user's favourites and events
   async updateUser(id: string, data: any): Promise<Attendee> {
     console.log(data);
     return await this.prisma.attendee.update({
@@ -33,6 +34,14 @@ export class UserService {
           },
         },
         favourites: data.favourites,
+      },
+    });
+  }
+  async normalUpdate(id: string, image: string) {
+    return await this.prisma.attendee.update({
+      where: { id },
+      data: {
+        imageUrl: image,
       },
     });
   }
