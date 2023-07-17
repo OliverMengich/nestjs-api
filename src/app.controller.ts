@@ -20,7 +20,7 @@ import { AppService } from './app.service';
 import { EventService } from './Events/events.service';
 import { SpeakerService } from './Speaker/speaker.service';
 import { LocationService } from './Location/location.service';
-import { Location, Speaker, Event, Attendee } from '@prisma/client';
+import { Speaker, Attendee } from '@prisma/client';
 import { AuthService } from './auth/auth.service';
 import { AuthGuard } from './auth/auth.guard';
 import { UserService } from './Users/user.service';
@@ -78,12 +78,15 @@ export class AppController {
     console.log(req.user);
     const imageArr: string[] = [];
     if (files) {
+      const randomnumber = Math.floor(Math.random() * 1000000 + 1);
       files.posters.forEach((poster) => {
         console.log(poster);
-        imageArr.push('/src/Events/posters/' + poster.originalname);
+        imageArr.push(
+          'http://localhost:3000/events/posters/' + randomnumber + '.png',
+        );
         mkdirSync(`./src/Events/posters/`, { recursive: true });
         writeFileSync(
-          `./src/Events/posters/${poster.originalname}`,
+          `./src/Events/posters/${randomnumber}.png`,
           poster.buffer,
         );
       });
@@ -128,10 +131,13 @@ export class AppController {
   ) {
     const imageArr: string[] = [];
     files.forEach((img) => {
+      const randomnumber = Math.floor(Math.random() * 1000000 + 1);
       console.log(img);
-      imageArr.push(img.originalname);
-      mkdirSync(`./src/Events/posters/`, { recursive: true });
-      writeFileSync(`./src/Events/posters/${img.originalname}`, img.buffer);
+      imageArr.push(
+        'http://localhost:3000/location/posters' + randomnumber + '.png',
+      );
+      mkdirSync(`./src/Location/images/`, { recursive: true });
+      writeFileSync(`./src/Location/images/${randomnumber}.png`, img.buffer);
     });
     console.log(imageArr, 'Images array');
     return this.locationService.createLocation({
@@ -199,14 +205,17 @@ export class AppController {
     @UploadedFile() file: Express.Multer.File,
   ) {
     console.log(file, req.user.id, __dirname);
-    mkdir('./src/uploads' + req.user.id, { recursive: true }, (err) => {
+    mkdir('./src/Users/uploads' + req.user.id, { recursive: true }, (err) => {
       if (err) throw err;
     });
     writeFileSync(
       `./src/uploads/${req.user.id}/${file.originalname}`,
       Buffer.from(new Uint8Array(file.buffer)),
     );
-    const userImagePath = '/src/uploads/' + req.user.id + file.originalname;
+    const userImagePath =
+      'https://localhost:3000/src/Users/uploads/' +
+      req.user.id +
+      file.originalname;
     return this.userService.normalUpdate(req.user.id, userImagePath);
   }
   @UseGuards(AuthGuard)
