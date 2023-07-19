@@ -81,9 +81,7 @@ export class AppController {
       const randomnumber = Math.floor(Math.random() * 1000000 + 1);
       files.posters.forEach((poster) => {
         console.log(poster);
-        imageArr.push(
-          'http://localhost:3000/events/posters/' + randomnumber + '.png',
-        );
+        imageArr.push('http://localhost:3000/events/' + randomnumber + '.png');
         mkdirSync(`./src/Events/posters/`, { recursive: true });
         writeFileSync(
           `./src/Events/posters/${randomnumber}.png`,
@@ -133,9 +131,7 @@ export class AppController {
     files.forEach((img) => {
       const randomnumber = Math.floor(Math.random() * 1000000 + 1);
       console.log(img);
-      imageArr.push(
-        'http://localhost:3000/location/posters' + randomnumber + '.png',
-      );
+      imageArr.push('http://localhost:3000/locations/' + randomnumber + '.png');
       mkdirSync(`./src/Location/images/`, { recursive: true });
       writeFileSync(`./src/Location/images/${randomnumber}.png`, img.buffer);
     });
@@ -205,17 +201,17 @@ export class AppController {
     @UploadedFile() file: Express.Multer.File,
   ) {
     console.log(file, req.user.id, __dirname);
-    mkdir('./src/Users/uploads' + req.user.id, { recursive: true }, (err) => {
+    mkdir('./src/Users/uploads/', { recursive: true }, (err) => {
       if (err) throw err;
     });
     writeFileSync(
-      `./src/uploads/${req.user.id}/${file.originalname}`,
+      `./src/Users/uploads/${req.user.id}${file.originalname.slice(-4)}`,
       Buffer.from(new Uint8Array(file.buffer)),
     );
     const userImagePath =
-      'https://localhost:3000/src/Users/uploads/' +
+      'http://localhost:3000/users/' +
       req.user.id +
-      file.originalname;
+      file.originalname.slice(-4);
     return this.userService.normalUpdate(req.user.id, userImagePath);
   }
   @UseGuards(AuthGuard)
