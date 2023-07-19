@@ -13,7 +13,15 @@ async function bootstrap() {
     '/events',
     express.static(join(__dirname, '..', 'src', 'Events', 'posters')),
   );
-  app.use('/users', express.static(join(__dirname, '..', 'src', 'uploads')));
+  app.use(
+    '/users',
+    express.static(join(__dirname, '..', 'src', 'Users', 'uploads')),
+  );
+  app.use(
+    '/locations',
+    express.static(join(__dirname, '..', 'src', 'Location', 'images')),
+  );
+
   await app.listen(3000);
 }
 bootstrap();
