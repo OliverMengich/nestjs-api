@@ -8,6 +8,7 @@ import {
   HttpStatus,
   Param,
   Post,
+  Query,
   Request,
   UseGuards,
   UploadedFile,
@@ -48,7 +49,11 @@ export class AppController {
     return this.appService.getHello();
   }
   @Get('events')
-  getEvents() {
+  getEvents(@Query('limit') limit: number) {
+    if (limit) {
+      console.log(limit);
+      return this.eventService.events(limit);
+    }
     return this.eventService.events();
   }
   @Get('events/:id')
@@ -172,8 +177,8 @@ export class AppController {
   @HttpCode(HttpStatus.OK)
   @Post('auth/login')
   async login(@Body() user: Omit<Attendee, 'id'>) {
-    console.log(user.email);
-    if (!user.email && !user.name && !user.password) {
+    console.log(user.email, user.password);
+    if (!user.email && !user.password) {
       throw new BadRequestException('Something bad happened', {
         cause: new Error(),
         description: 'Some error description',
