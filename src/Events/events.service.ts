@@ -5,7 +5,13 @@ import { Event, Prisma } from '@prisma/client';
 @Injectable()
 export class EventService {
   constructor(private prisma: PrismaService) {}
-  async events(): Promise<Event[]> {
+  async events(limit?: number): Promise<Event[]> {
+    if (limit) {
+      return this.prisma.event.findMany({
+        take: limit,
+        include: { location: true, speaker: true, attendees: true },
+      });
+    }
     return await this.prisma.event.findMany({
       include: { location: true, speaker: true, attendees: true },
     });
