@@ -7,13 +7,19 @@ export class SpeakerService {
   constructor(private prisma: PrismaService) {}
   async speakers(): Promise<Speaker[]> {
     return await this.prisma.speaker.findMany({
-      include: { event: true },
+      include: { events: true },
     });
   }
   async speaker(id: string): Promise<Speaker> {
-    return await this.prisma.speaker.findUnique({
+    console.log(id, 'Speaker is');
+    const data = await this.prisma.speaker.findUnique({
       where: { id: id },
+      include: {
+        events: true,
+      },
     });
+    console.log(data);
+    return data;
   }
   async createSpeaker(data: Prisma.SpeakerCreateInput): Promise<Speaker> {
     console.log(data);

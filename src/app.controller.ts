@@ -74,25 +74,21 @@ export class AppController {
   createEvent(
     @Body() data,
     @Request() req: NewRequest,
-    @UploadedFiles()
-    files: {
-      posters: Express.Multer.File[];
-    },
+    @UploadedFile()
+    file: Express.Multer.File,
   ) {
-    console.log(data, files);
+    console.log(data, file);
     console.log(req.user);
-    const imageArr: string[] = [];
-    if (files) {
+    let imageArr = '';
+    if (file) {
       const randomnumber = Math.floor(Math.random() * 1000000 + 1);
-      files.posters.forEach((poster) => {
-        console.log(poster);
-        imageArr.push('http://localhost:3000/events/' + randomnumber + '.png');
-        mkdirSync(`./src/Events/posters/`, { recursive: true });
-        writeFileSync(
-          `./src/Events/posters/${randomnumber}.png`,
-          poster.buffer,
-        );
-      });
+      console.log(file);
+      imageArr =
+        'http://localhost:3000/events/' +
+        randomnumber +
+        file.originalname.slice(-4);
+      mkdirSync(`./src/Events/posters/`, { recursive: true });
+      writeFileSync(`./src/Events/posters/${randomnumber}.png`, file.buffer);
     }
     console.log(imageArr, 'Images array');
     // return {
