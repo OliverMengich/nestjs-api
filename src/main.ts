@@ -35,6 +35,6 @@ async function bootstrap() {
     express.static(join(__dirname, '..', 'src', 'Location', 'images')),
   );
 
-  await app.listen(3000);
+  await app.listen(3001);
 }
 bootstrap();
