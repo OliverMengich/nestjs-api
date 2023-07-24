@@ -43,7 +43,7 @@ model Speaker {
   email       String
   description String
   password    String
-  event       Event?
+  events       Event?
   imageUrl   String?
   role        Role?   @default(SPEAKER)
   jobTitle    String?
@@ -70,7 +70,7 @@ model Event {
   location    Location?           @relation(fields: [locationId], references: [id]) // an event has one location and a location can have many events
   locationId  String?
   attendees   Attendee[]
-  image       String[]
+  image       String
   ratings     ReviewsAndRatings[]
   favourites  Attendee[]          @relation("favourites")
   ticketPrice Float? // integrate a payment service, email listing
