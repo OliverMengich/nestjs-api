@@ -11,7 +11,7 @@ datasource db {
 }
 
 model Location {
-  id        String  @id @default(uuid())
+  id        String   @id @default(uuid())
   name      String
   address   String
   latitude  Float
@@ -19,32 +19,44 @@ model Location {
   events    Event[]
   images    String[]
 }
+
 enum Role {
   ATTENDEE
   SPEAKER
 }
+
 model Attendee {
-  id         String  @id @default(uuid())
-  name       String
-  email      String
-  password   String
-  events     Event[]
-  favourites Event[] @relation("favourites")
-  imageUrl   String?
-  role       Role?    @default(ATTENDEE)
+  id            String         @id @default(uuid())
+  name          String
+  email         String
+  password      String
+  events        Event[]
+  favourites    Event[]        @relation("favourites")
+  imageUrl      String?
+  role          Role?          @default(ATTENDEE)
+  notifications  Notification[]
 
   @@unique([email]) // an attendee can only have one email, email is unique
   @@index([email]) // this is an index on the email column, this is used for faster lookups and queries
 }
 
+model Notification {
+  id         String   @id @default(uuid())
+  message    String
+  createdAt  DateTime @default(now())
+  attendee   Attendee @relation(fields: [attendeeId], references: [id])
+  attendeeId String
+  eventId    String
+}
+
 model Speaker {
-  id          String @id @default(uuid())
+  id          String  @id @default(uuid())
   name        String
   email       String
   description String
   password    String
-  events       Event?
-  imageUrl   String?
+  events      Event?
+  imageUrl    String?
   role        Role?   @default(SPEAKER)
   jobTitle    String?
   // @@index([email])
@@ -75,8 +87,8 @@ model Event {
   favourites  Attendee[]          @relation("favourites")
   ticketPrice Float? // integrate a payment service, email listing
   // ticket generation pdf
-  speaker   Speaker?  @relation(fields: [speakerId], references: [id]) // an event has one speaker and a speaker can have one event
-  speakerId String?   @unique
-  updatedAt DateTime @updatedAt
-  createdAt DateTime @default(now())
+  speaker     Speaker?            @relation(fields: [speakerId], references: [id]) // an event has one speaker and a speaker can have one event
+  speakerId   String?             @unique
+  updatedAt   DateTime            @updatedAt
+  createdAt   DateTime            @default(now())
 }
