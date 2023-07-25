@@ -12,6 +12,7 @@ export class AuthService {
   ): Promise<{ access_token: string } | null> {
     const user = await this.prisma.attendee.findUnique({
       where: { email: email },
+      include: { favourites: true, events: true, notifications: true },
     });
     if (user && user.password === password) {
       const obj = {
@@ -19,6 +20,7 @@ export class AuthService {
         email: user.email,
         name: user.name,
       };
+
       return {
         access_token: await this.jwtService.signAsync(obj),
         ...user,

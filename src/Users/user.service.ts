@@ -9,7 +9,7 @@ export class UserService {
   async getUserInfo(id: string): Promise<Attendee | null> {
     const user = await this.prisma.attendee.findUnique({
       where: { id },
-      include: { events: true, favourites: true },
+      include: { events: true, favourites: true, notifications: true },
     });
     if (user.name && user.email) {
       return user;
@@ -18,7 +18,7 @@ export class UserService {
   }
   async getAttendees(): Promise<Attendee[]> {
     const users = await this.prisma.attendee.findMany({
-      include: { events: true, favourites: true },
+      include: { events: true, favourites: true, notifications: true },
     });
     return users;
   }

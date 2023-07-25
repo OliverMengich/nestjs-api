@@ -24,9 +24,20 @@ export class EventService {
   }
   async createEvent(data): Promise<Event> {
     console.log('Data to create', data);
-    return await this.prisma.event.create({
+    const users = this.prisma.attendee.findMany();
+    const response = await this.prisma.event.create({
       data,
     });
+    (await users).forEach(async (user) => {
+      await this.prisma.notification.create({
+        data: {
+          message: 'New Event' + response.name,
+          attendeeId: user.id,
+          eventId: response.id,
+        },
+      });
+    });
+    return response;
   }
   async updateEvent(params: {
     where: Prisma.EventWhereUniqueInput;
