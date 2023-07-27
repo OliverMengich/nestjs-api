@@ -25,11 +25,7 @@ import { Speaker, Attendee } from '@prisma/client';
 import { AuthService } from './auth/auth.service';
 import { AuthGuard } from './auth/auth.guard';
 import { UserService } from './Users/user.service';
-import {
-  FileInterceptor,
-  FileFieldsInterceptor,
-  FilesInterceptor,
-} from '@nestjs/platform-express';
+import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 interface NewRequest extends Request {
   user: Attendee;
 }
@@ -69,26 +65,27 @@ export class AppController {
     });
   }
   @UseGuards(AuthGuard)
+  @UseInterceptors(FileInterceptor('poster'))
   @Post('new-event')
-  @UseInterceptors(FileFieldsInterceptor([{ name: 'posters', maxCount: 3 }]))
   createEvent(
+    @UploadedFile() poster: Express.Multer.File,
     @Body() data,
     @Request() req: NewRequest,
-    @UploadedFile()
-    file: Express.Multer.File,
   ) {
-    console.log(data, file);
+    console.log(data, poster);
     console.log(req.user);
     let imageArr = '';
-    if (file) {
+    if (poster) {
       const randomnumber = Math.floor(Math.random() * 1000000 + 1);
-      console.log(file);
-      imageArr =
-        'http://localhost:3000/events/' +
-        randomnumber +
-        file.originalname.slice(-4);
+      console.log(poster);
+      imageArr = `http://192.168.88.237:3001/events/${randomnumber}.${poster.originalname
+        .split('.')
+        .pop()}`;
       mkdirSync(`./src/Events/posters/`, { recursive: true });
-      writeFileSync(`./src/Events/posters/${randomnumber}.png`, file.buffer);
+      writeFileSync(
+        `./src/Events/posters/${randomnumber}.` + poster.originalname.slice(-4),
+        poster.buffer,
+      );
     }
     console.log(imageArr, 'Images array');
     // return {
@@ -132,7 +129,12 @@ export class AppController {
     files.forEach((img) => {
       const randomnumber = Math.floor(Math.random() * 1000000 + 1);
       console.log(img);
-      imageArr.push('http://localhost:3000/locations/' + randomnumber + '.png');
+
+      imageArr.push(
+        ` http://192.168.88.237:3001/events/${randomnumber}.${img.originalname
+          .split('.')
+          .pop()}`,
+      );
       mkdirSync(`./src/Location/images/`, { recursive: true });
       writeFileSync(`./src/Location/images/${randomnumber}.png`, img.buffer);
     });
@@ -206,14 +208,15 @@ export class AppController {
       if (err) throw err;
     });
     writeFileSync(
-      `./src/Users/uploads/${req.user.id}${file.originalname.slice(-4)}`,
+      `./src/Users/uploads/${req.user.id}.${file.originalname
+        .split('.')
+        .pop()}`,
       Buffer.from(new Uint8Array(file.buffer)),
     );
-    const userImagePath =
-      'http://localhost:3000/users/' +
-      req.user.id +
-      file.originalname.slice(-4);
-    return this.userService.normalUpdate(req.user.id, userImagePath);
+    const imageURL = `http://192.168.88.237:3001/users/${
+      req.user.id
+    }.${file.originalname.split('.').pop()}`;
+    return this.userService.normalUpdate(req.user.id, imageURL);
   }
   @UseGuards(AuthGuard)
   @Post('update')
