@@ -34,7 +34,7 @@ model Attendee {
   favourites    Event[]        @relation("favourites")
   imageUrl      String?
   role          Role?          @default(ATTENDEE)
-  notifications  Notification[]
+  notifications Notification[]
 
   @@unique([email]) // an attendee can only have one email, email is unique
   @@index([email]) // this is an index on the email column, this is used for faster lookups and queries
@@ -47,6 +47,7 @@ model Notification {
   attendee   Attendee @relation(fields: [attendeeId], references: [id])
   attendeeId String
   eventId    String
+  isRead     Boolean  @default(false)
 }
 
 model Speaker {
@@ -55,7 +56,7 @@ model Speaker {
   email       String
   description String
   password    String
-  events      Event?
+  events      Event[] 
   imageUrl    String?
   role        Role?   @default(SPEAKER)
   jobTitle    String?
@@ -75,20 +76,20 @@ model ReviewsAndRatings {
 }
 
 model Event {
-  id          String              @id @default(uuid())
-  name        String
-  description String?
-  date        DateTime
-  location    Location?           @relation(fields: [locationId], references: [id]) // an event has one location and a location can have many events
-  locationId  String?
-  attendees   Attendee[]
-  image       String
-  ratings     ReviewsAndRatings[]
-  favourites  Attendee[]          @relation("favourites")
-  ticketPrice Float? // integrate a payment service, email listing
+  id           String              @id @default(uuid())
+  name         String
+  description  String?
+  date         DateTime
+  location     Location?           @relation(fields: [locationId], references: [id]) // an event has one location and a location can have many events
+  locationId   String?
+  attendees    Attendee[]
+  image        String
+  ratings      ReviewsAndRatings[]
+  favourites   Attendee[]          @relation("favourites")
+  ticketPrice  Float? // integrate a payment service, email listing
   // ticket generation pdf
-  speaker     Speaker?            @relation(fields: [speakerId], references: [id]) // an event has one speaker and a speaker can have one event
-  speakerId   String?             @unique
-  updatedAt   DateTime            @updatedAt
-  createdAt   DateTime            @default(now())
+  speakers     Speaker[] // an event has one speaker and a speaker can have one event
+  speakerId    String?             @unique
+  updatedAt    DateTime            @updatedAt
+  createdAt    DateTime            @default(now())
 }
