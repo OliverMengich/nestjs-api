@@ -9,17 +9,17 @@ export class EventService {
     if (limit) {
       return this.prisma.event.findMany({
         take: limit,
-        include: { location: true, speaker: true, attendees: true },
+        include: { location: true, speakers: true, attendees: true },
       });
     }
     return await this.prisma.event.findMany({
-      include: { location: true, speaker: true, attendees: true },
+      include: { location: true, speakers: true, attendees: true },
     });
   }
   async event(id: string): Promise<Event> {
     return await this.prisma.event.findUnique({
       where: { id: id },
-      include: { location: true, speaker: true },
+      include: { location: true, speakers: true, attendees: true },
     });
   }
   async createEvent(data): Promise<Event> {
@@ -31,7 +31,12 @@ export class EventService {
     (await users).forEach(async (user) => {
       await this.prisma.notification.create({
         data: {
-          message: 'New Event' + response.name,
+          message:
+            `Hello ${user.name}, there's an event ` +
+            response.name +
+            ' on ' +
+            new Date(response.date).toDateString() +
+            'Check it out!',
           attendeeId: user.id,
           eventId: response.id,
         },
