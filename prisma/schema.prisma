@@ -35,7 +35,7 @@ model Attendee {
   imageUrl      String?
   role          Role?          @default(ATTENDEE)
   notifications Notification[]
-
+  following     Speaker[]     @relation("followers")   
   @@unique([email]) // an attendee can only have one email, email is unique
   @@index([email]) // this is an index on the email column, this is used for faster lookups and queries
 }
@@ -60,6 +60,7 @@ model Speaker {
   imageUrl    String?
   role        Role?   @default(SPEAKER)
   jobTitle    String?
+  followers   Attendee[] @relation("followers")
   // @@index([email])
   // @@id([email]) // this is a composite primary key, the email is the primary key
 
