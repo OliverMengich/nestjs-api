@@ -7,7 +7,7 @@ export class SpeakerService {
   constructor(private prisma: PrismaService) {}
   async speakers(): Promise<Speaker[]> {
     return await this.prisma.speaker.findMany({
-      include: { events: true },
+      include: { events: true, followers: true },
     });
   }
   async speaker(id: string): Promise<Speaker> {
@@ -16,6 +16,7 @@ export class SpeakerService {
       where: { id: id },
       include: {
         events: true,
+        followers: true,
       },
     });
     console.log(data);
